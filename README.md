@@ -2,7 +2,7 @@
 
 I didn't set out to build a system. I just got tired of repeating myself.
 
-Every new AI coding session, I'd paste the same context. Here's the project structure. Here's the naming convention. Here's why we don't touch that CSS. Here's the version bump command. The agent would do the work, and then the next session I'd do it all again. The knowledge was in my head, not anywhere the agent could find it.
+Every new AI coding session, I'd paste the same context. Here's the project structure. Here's the naming convention. Here's why we don't touch that module. Here's the version bump command. The agent would do the work, and then the next session I'd do it all again. The knowledge was in my head, not anywhere the agent could find it.
 
 So I wrote it down. An `agent.md` at the project root. A few rules, some metadata, a checklist. The agent read it at the start of each session and we got moving faster.
 
@@ -10,15 +10,25 @@ Then I noticed something: the agent wasn't just reading the doc. It was improvin
 
 I hadn't asked it to do that. It just made sense.
 
+## Quick Start (Bootstrapping a New Project)
+
+To initialize this system in a brand new repository, give your AI agent the following prompt:
+
+> **"Read the master template at `https://raw.githubusercontent.com/Diew/living-docs/main/LIVING_DOC_SYSTEM.md` and execute the 'Bootstrapping a New Project' sequence to initialize this current directory."**
+
+Alternatively, download `LIVING_DOC_SYSTEM.md` and attach it directly to your agent if it does not support URL fetching.
+
+The agent will generate the required tripartite structure (`agent.md`, the `docs/` folder, and the governance registry) and enforce the domain-agnostic rules for your new codebase.
+
 ## What it became
 
-Over time, one file wasn't enough. The logic was real and it was growing. UI rules belonged somewhere separate from data rules. Architecture decisions didn't belong next to CSS tokens. So I split things out.
+Over time, one file wasn't enough. The logic was real and it was growing. Domain rules belonged somewhere separate from data rules. Architecture decisions didn't belong next to domain-specific constants. So I split things out.
 
 Now the system looks like this:
 
 **`agent.md`** — the entry point. Session-critical rules, project metadata, quick-reference checklists. Short by design. The agent reads this every session without being asked.
 
-**`docs/`** — the wiki. Every file owns exactly one concern. `GUIDE_developer.md` for coding standards. `ARCH_technical-specs.md` for data and routing. `STANDARDS_ui-visual.md` for design tokens and animation rules. `LOGIC_*.md` for feature-specific behavior. Each file has a clear prefix so both humans and agents know what's inside before opening it.
+**`docs/`** — the wiki. Every file owns exactly one concern. `GUIDE_developer.md` for coding standards. `ARCH_technical-specs.md` for data and routing. `STANDARDS_*.md` for domain-specific rules (e.g., API boundaries, UI tokens). `LOGIC_*.md` for feature-specific behavior. Each file has a clear prefix so both humans and agents know what's inside before opening it.
 
 **`ARCH_documentation-governance.md`** — the schema. A registry of every doc file, what it contains, what it must not contain, and when to load it. A task-to-file mapping so the agent knows exactly which docs to read for any given task. This file is what makes the agent a disciplined maintainer rather than a chatbot that happens to have access to some markdown files.
 
@@ -28,7 +38,7 @@ The rule that holds it together: **one file owns each rule. No duplication.** If
 
 The docs compound.
 
-When the agent fixes a routing bug, it updates `ARCH_technical-specs.md`. When it adds a new feature, it registers the new doc in the governance registry. When it discovers an edge case — an intentional CSS quirk, a mobile header that must not be touched, a phantom typo that's actually intentional flavor text — it writes it down. The next session, that knowledge is already there.
+When the agent fixes a routing bug, it updates `ARCH_technical-specs.md`. When it adds a new feature, it registers the new doc in the governance registry. When it discovers an edge case — an intentional API timeout, a specific architectural quirk, or a critical data pipeline sequence that must not be touched — it writes it down. The next session, that knowledge is already there.
 
 This is different from a skill file or a static prompt. A skill file is a snapshot. It's accurate when you write it and gradually wrong after that. The living doc is a contract: the agent is responsible for keeping it true. It doesn't drift because the thing that updates the code also updates the doc.
 
@@ -62,4 +72,4 @@ The name I'd give it now: **Living Docs**. Not a skill file. Not a prompt. A per
 
 ---
 
-*The project this grew out of is [NPC Jail](https://github.com/Diew/vt-template). The template that packages the starting structure is `vt-template`.*
+*This system grew out of the chaotic iteration of my main project. By having the AI itself audit the messy codebase, it successfully extracted the structural patterns into a simple web-development starter kit called [vt-template](https://github.com/Diew/vt-template). But the true breakthrough wasn't the folder structure—it was the domain-agnostic AI governance rules that the AI helped formalize along the way: Living Docs.*
