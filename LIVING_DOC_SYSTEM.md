@@ -32,7 +32,7 @@ One file at the project root. The agent reads this first in every session withou
 - **Version**: [Semantic version, linked to bump script]
 - **Status**: [Active / Maintenance / Legacy]
 - **Tech Stack**: [Core languages, frameworks, runtimes]
-- **Context Anchors**: [Links to global wiki or cross-project references]
+- **Context Anchors**: [Links to Global LLM Wiki or cross-project references]
 
 ## Documentation Priority
 - `docs/` is the source of truth for behavior, architecture, and implementation rules.
@@ -166,11 +166,13 @@ If the codebase and the documentation disagree:
 
 ### 3. Maintenance Cycle (Doc Sweep)
 
-After completing any task, the agent must:
+Docs are updated **on explicit human request**, not automatically after every task. When the human asks, the agent must:
 
 - **Sync**: Update docs that own the changed logic.
 - **Register**: Add new docs to the governance registry.
 - **Enforce**: Move rules to their correct owner if misplaced. Delete duplicates.
+
+The agent must **never update docs silently** as a side effect of a code task unless explicitly told to. Unsolicited doc edits risk scope creep and unreviewed changes to the source of truth.
 
 ### 4. Adding a New Doc
 
@@ -262,6 +264,20 @@ Do not skip the bridge phase. It is the main guardrail against broken imports.
 Before any multi-step task, state a brief plan: `[Step] → verify: [check]`.
 
 Transform vague tasks into verifiable goals. Never guess → build → fix → repeat.
+
+### When to Stop and Ask
+
+Stop before acting and ask **one** question when any of the following is true:
+
+| Trigger | Reason |
+|---------|--------|
+| Task scope is wider than described — would touch files not mentioned | Risk of unintended side effects |
+| Task contradicts a rule in `docs/` or a `STUBBORN_FACT` | Cannot resolve conflict without human intent |
+| Task requires deleting or overwriting existing content | Irreversible — must confirm |
+| Task is ambiguous enough that two valid interpretations produce different outcomes | Guessing here = regression |
+| Code to be modified has no test coverage and task requires TDD | Cannot verify safety without tests first |
+
+Never ask more than one question per stop. Pick the most blocking unknown.
 
 ### TDD Decision Rule
 
@@ -409,27 +425,41 @@ Objective: [One sentence goal.]
 
 ---
 
-## Cross-Project Setup (Global Wiki)
+## Cross-Project Setup (Global LLM Wiki)
 
-For projects using a shared knowledge base across multiple repos:
+For projects connecting to a shared Global LLM Wiki across multiple repos:
 
-- **Anchor path**: `../<global-wiki>/index.md` (relative path from project root to the shared wiki repo).
+- **Anchor path**: `../<global-llm-wiki>/index.md` (relative path from project root to the shared wiki repo).
 - Local docs override global standards when there is a conflict.
 - Document the anchor in `agent.md` under "Context Anchors".
-- The global wiki provides institutional memory; local docs provide project specifics.
+- The Global LLM Wiki provides institutional memory; local docs provide project specifics.
 
 ---
 
 ## Bootstrapping a New Project
 
-Run this sequence exactly when setting up Living Docs for a new project:
+### Path A: New Project (no existing code)
+
+Run this sequence exactly:
 
 1. **Create `agent.md`** at project root. Populate with: metadata schema, documentation priority rules, command reference, task→load mapping, milestones.
 2. **Create `docs/`** folder at project root.
 3. **Create `docs/ARCH_documentation-governance.md`** with: registry table, task→load mapping, canonical ownership table, naming convention, maintenance rules.
 4. **Create `docs/GUIDE_developer.md`** with: implementation rules, refactoring standards, module structure, anti-patterns.
-5. **Create initial domain docs** extracted from existing logic or spec. Follow naming conventions. One concern per file.
+5. **Create initial domain docs** as placeholders using the naming convention. One concern per file.
 6. **Register everything** in `ARCH_documentation-governance.md` before use.
 7. **Verify**: The system is ready when the agent knows exactly which files to load for any task type.
+
+### Path B: Existing Project (undocumented codebase)
+
+Use this path when a project already has code but no Living Docs structure:
+
+1. **Read the codebase** — scan all files to understand actual behavior, data flow, and logic.
+2. **Identify rule areas** — group what you find into categories: architecture, business logic, standards, references.
+3. **Create doc files** — one file per concern, following the naming convention. Populate each with rules extracted from the code, not invented.
+4. **Flag intentional quirks** — any non-obvious decision or "wrong-looking" code that is correct must be marked `STUBBORN_FACT`.
+5. **Register everything** in `ARCH_documentation-governance.md`.
+6. **Populate `agent.md`** with the task→load mapping using the actual filenames created.
+7. **Verify**: The system is ready when the agent can start a fresh session, read only `agent.md`, and know exactly which files to load for any task.
 
 > The system is alive when every rule has exactly one owner, every file is registered, and the agent can start a new session and know the full project state by reading `agent.md` alone.

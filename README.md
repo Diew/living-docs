@@ -60,13 +60,20 @@ The tedious part of maintaining documentation isn't the writing. It's the bookke
 
 The human's job is to design the structure, make judgment calls, and ask the right questions. The agent's job is everything else.
 
+One deliberate constraint: **the agent does not update docs automatically.** Doc updates happen when the human explicitly asks — "update the docs", "run a doc sweep", "register this new file".
+
+The reason is a failure chain. If the agent updates docs automatically after every code task, and that code task was wrong, the docs now reflect wrong behavior. The next session, the agent reads those docs and treats the wrong behavior as intended. It compounds. The human is the checkpoint — you confirm the code is correct first, then instruct the agent to update the docs. That sequence is what keeps the system trustworthy over time.
+
 ## What I'd call it now
 
 I built this without a name for it. I thought I was just writing good documentation.
 
-After reading Karpathy's LLM Wiki gist, I realized I'd been doing the same thing — but for a codebase instead of a research corpus. His pattern: raw sources stay immutable, an LLM-maintained wiki sits between you and the raw material, a schema doc tells the agent how to maintain it. My pattern: the codebase stays immutable, an LLM-maintained doc layer sits between the agent and the code, a governance doc tells the agent how to maintain it.
+After reading Karpathy's LLM Wiki gist, I wanted to apply the concept. I asked an AI to compare his system with my existing documentation workflow. The AI's conclusion: *same architecture, different domain.* 
 
-Same architecture. Different domain.
+His pattern: raw sources stay immutable, an LLM-maintained wiki sits between you and the raw material, a schema doc tells the agent how to maintain it. 
+My pattern: the codebase stays immutable, an LLM-maintained doc layer sits between the agent and the code, a governance doc tells the agent how to maintain it.
+
+That confirmation was the trigger. I decided to extract the governance rules from the chaotic main project into this standalone, domain-agnostic template.
 
 The name I'd give it now: **Living Docs**. Not a skill file. Not a prompt. A persistent, compounding artifact that gets more accurate with every task the agent completes — because the agent that changes the code is the same agent that keeps the record.
 
