@@ -1,18 +1,22 @@
 # Living Docs
 
-> Read this file. Then build the system described in it.
+> Read this file. Then ask exactly one question before doing anything else:
+> **"Does this project have existing code?"**
+> - Yes → follow Path B (Brownfield) in the Bootstrapping Guide.
+> - No → follow Path A (Greenfield) in the Bootstrapping Guide.
+> Do not assume. Do not proceed without an answer.
 
-This document defines the **Living Docs** system — a self-maintaining documentation architecture for any technical project. An agent that reads this file should be able to set up the full system from scratch for any new codebase, research corpus, or automation suite.
+This document defines the **Living Docs** system — a self-maintaining documentation architecture for technical projects. Read this file first, then split the project into the correct docs and files.
 
 ---
 
 ## What this is
 
-**Living Docs** is a set of markdown files that the agent reads before acting and updates after completing work. It acts as the "institutional memory" of the project.
+**Living Docs** is the markdown memory layer for a project.
 
-- **Self-Maintaining**: The agent that changes the code/data is the same agent that updates the docs. It stays true because the writer and the worker are the same.
-- **Persistent**: Knowledge survives across sessions and different AI models.
-- **Structured**: Rules are partitioned to prevent context bloat. One file owns each rule.
+- **Self-Maintaining**: same agent changes code and updates docs.
+- **Persistent**: knowledge survives across sessions and models.
+- **Structured**: one file owns one rule.
 
 ---
 
@@ -20,7 +24,7 @@ This document defines the **Living Docs** system — a self-maintaining document
 
 ### 1. Entry point — `agent.md`
 
-One file at the project root. The agent reads this first in every session without being asked. It defines the **Awareness Layer** — enough context to act, not enough to replace the full docs.
+One file at the project root. The agent reads this first in every session without being asked. It gives enough context to act without replacing the full docs.
 
 **Mandatory Metadata Schema:**
 
@@ -92,17 +96,73 @@ When a file exceeds **300 lines** or contains diverse content types (Logic/Visua
 
 ### 3. Registry — `ARCH_documentation-governance.md`
 
-A single file acting as the system's "Source of Truth" for doc management.
-
-**Required sections:**
-
-1. **Registry Table** — Every file mapped to: what it contains, what it must NOT contain, and when to load it.
-2. **Task → Load Mapping** — Which files to load per task type.
-3. **Canonical Ownership** — Which file is the single source of truth for each rule group.
-4. **Naming Convention Table** — Prefix reference.
-5. **Maintenance Rules** — How to add, move, or edit docs.
+A single source of truth for doc management.
 
 **The Registry Rule**: If a file is not in this registry, it does not exist for the agent. Every new doc must be registered before use.
+
+#### Copy-Pasteable Registry Template
+
+```markdown
+# ARCH_documentation-governance — Registry & Loading Guide
+
+---
+
+## Registry & Loading Guide
+
+> **If a file is not here, register it before using it.**
+
+| File | Contains | Must NOT contain | Load when |
+|------|----------|-----------------|-----------|
+| `agent.md` | Session-critical rules, quick-reference, project metadata | Detailed implementation, full doc content | **Always** |
+| `GUIDE_developer.md` | Implementation standards, naming rules, patterns, versioning, pre-commit | Feature-specific logic, data structures | Technical work |
+| `ARCH_documentation-governance.md` | System's source of truth for doc management | Implementation content | Managing docs |
+| `ARCH_technical-specs.md` | Core architecture, data models, state flows, system boundaries | Formatting rules, UI tokens | Structural work |
+| `STANDARDS_interface.md` | Output formats, API specs, visual/CLI standards, IO rules | Business logic, algorithms | Interface/IO work |
+| `REF_developer-reference.md` | Naming examples, lookup tables, layout tables, reference data | Implementation content | Checking conventions / lookup |
+| `REFACTOR_TODO.md` | Current refactor work plan and targets | Canonical rules | Refactor planning |
+
+### Task → Load mapping
+
+| Task | Load |
+|------|------|
+| General development | `agent.md` |
+| Feature / Logic changes | `agent.md` + `GUIDE_developer.md` + relevant `LOGIC_*.md` |
+| Architecture / Data changes | + `ARCH_technical-specs.md` |
+| Interface / Output changes | + `STANDARDS_interface.md` |
+| Refactor planning | `REFACTOR_TODO.md` |
+| Documentation management | `ARCH_documentation-governance.md` |
+| Reference lookup | relevant `REF_*.md` |
+
+---
+
+## Canonical Ownership
+
+| Area | Canonical file |
+|------|----------------|
+| Session-critical rules | `agent.md` |
+| Implementation standards | `GUIDE_developer.md` |
+| Docs registry / load mapping | `ARCH_documentation-governance.md` |
+| Project-specific logic | `LOGIC_*.md` |
+
+---
+
+## Docs Naming Convention
+
+| Prefix | Scope |
+|--------|-------|
+| `GUIDE_` | Implementation rules and standards |
+| `ARCH_` | System architecture, data flow, structure |
+| `LOGIC_` | Feature behavior, algorithms, business rules |
+| `STANDARDS_` | Interface specs, output formats, visuals |
+| `REF_` | Reference tables, constants, lookup data |
+| `INCIDENT_` | Incident post-mortems, regression logs |
+
+**Fixed names:** `agent.md`
+
+---
+
+*v[x.y.z] — [YYYY-MM-DD]*
+```
 
 ---
 
@@ -143,6 +203,8 @@ Use one file as the source of truth for each rule group. No rule should appear i
 
 ## Core Maintenance Protocols
 
+Use these rules to keep docs aligned with code and to prevent duplicate or stale guidance.
+
 ### 1. Intent Logging ("The Why")
 
 Code/data tells you *how* it works. Docs must tell you *why* it was built that way.
@@ -166,7 +228,7 @@ If the codebase and the documentation disagree:
 
 ### 3. Maintenance Cycle (Doc Sweep)
 
-Docs are updated **on explicit human request**, not automatically after every task. When the human asks, the agent must:
+Docs are updated **on explicit human request**, not automatically after every task. When asked, the agent must:
 
 - **Sync**: Update docs that own the changed logic.
 - **Register**: Add new docs to the governance registry.
@@ -184,11 +246,17 @@ The agent must **never update docs silently** as a side effect of a code task un
 
 1. Copy to destination → verify complete → delete from source → update any cross-references.
 
+### 6. Hyperlinking Standard
+
+- Use relative Markdown links for all cross-references: `[Title](FILENAME.md#header)`.
+- Never use absolute paths.
+- Link to specific headers wherever possible to reduce search time.
+
 ---
 
 ## Architectural Defaults (Domain-Agnostic)
 
-Regardless of the tech stack (Web, Backend, Data Science, Scripts), the following architectural patterns must be enforced via `GUIDE_` and `ARCH_` documents:
+Use `GUIDE_` and `ARCH_` documents to enforce these patterns:
 
 ### 1. The 3-Layer Separation
 Strictly separate responsibilities into three isolated layers:
@@ -249,12 +317,27 @@ Do not skip the bridge phase. It is the main guardrail against broken imports.
 | File contains 2+ unrelated concept groups | Split regardless of line count |
 | A function is reused across 2+ files | Move to a shared helper file |
 
+### Code Naming Conventions (Domain-Agnostic)
+
+| Type | Rule | Do | Don't |
+|------|------|----|-------|
+| Functions | `camelCase`, verb + noun | `getItemById`, `fetchSchema` | `doStuff`, `thing` |
+| Variables | intent first, avoid generic names | `itemList`, `configData` | `data`, `tmp` |
+| Booleans | prefix `is` / `has` / `can` / `should` | `isValid`, `hasItems` | `flag`, `state` |
+| Event handlers | prefix `handle` + target + event | `handleSubmitClick`, `handleFilterChange` | `onClick`, `clickHandler` |
+| Async functions | action-oriented, name what is fetched or saved | `fetchItemList`, `saveUserSettings` | `getData`, `loadStuff` |
+| Data objects | context + subject + type | `UserAuthInfo`, `systemStateMap` | `payload`, `thingObject` |
+| Files (logic) | responsibility-first, use role suffix when useful | `storage-manager.ts`, `board-renderer.ts` | `utils.ts`, `misc.ts` |
+
+> Naming rules live here as the bootstrap-friendly default. Put longer examples and edge cases in `REF_developer-reference.md` or a project-specific `REF_*.md`.
+
 ### Module Structure Rules
 
 | Rule | Detail |
 |------|--------|
 | One responsibility per file | A file does one thing: builds one section, processes one data type, or holds one group of helpers |
 | Orchestrators stay thin | Entry-point files contain only: data calls, cache logic, output rendering, trigger/event handling |
+| Responsibility-first naming | Filenames must reflect their role: `*-controller.ts`, `*-renderer.ts`, `*-processor.ts` |
 | Helpers are stateless | Helper functions must be pure — no side effects, no global reads |
 | Shared helpers live in one place | If 2+ files need the same helper, extract to a shared `*-helpers` file — never duplicated |
 | Import direction is one-way | Helpers never import from orchestrators. Processors never import from renderers |
@@ -307,18 +390,24 @@ These apply to all projects using this system:
 
 Answer only what is asked. No intro, recap, filler, or padding. Fragments acceptable. Short synonyms preferred. Technical terms exact. Code blocks unchanged. Errors quoted exactly.
 
-Pattern: `[thing] [action] [reason]. [next step].`
+**Pattern**: `[thing] [action] [reason]. [next step].`
 
-- Drop: articles (a/an/the), filler words (just/really/basically/actually), pleasantries.
-- Use full sentences for: security warnings, irreversible actions, multi-step sequences.
-- Always use professional writing for: code comments, commit messages, documentation files.
+### Rules for Terse Communication
 
-**Good:**
-- `Bug in auth middleware. Token expiry uses < not <=. Fix:`
-- `Function extracted. Tests pass. Ready to cut old code.`
+1.  **Drop articles & fillers**: a, an, the, just, really, basically, actually, simply.
+2.  **Drop pleasantries**: "Sure!", "I'd be happy to", "Certainly", "Of course", "Great question".
+3.  **No hedging**: "I think", "It might be", "Perhaps". If unsure, ask one question.
+4.  **Use fragments**: "Bug in auth. Fix:" instead of "I found a bug in the auth module and I am going to fix it."
 
-**Bad:**
-- `Sure! I'd be happy to help you with that! The issue you're experiencing is likely...`
+### Example Comparison
+
+| User Request | ❌ Bad Response | ✅ Good Response |
+|--------------|----------------|------------------|
+| Add a new user field | "Sure! I can definitely help with that. I will start by adding the 'age' field to the User model..." | "User model updated. Added 'age' (int). Migration generated. Ready to apply." |
+| Why is this failing? | "It seems like the error is caused by a null pointer. You might want to check the initialization..." | "Null pointer in `AuthService.ts:42`. `currentUser` undefined. Fix: initialize in constructor." |
+| Refactor this function | "I have carefully reviewed the code and I think we should extract this part to a helper. Does that sound okay?" | "Function exceeds 20 lines. Logic for 'tax_calc' extracted to helper. Tests pass. Ready to cut." |
+
+**Auto-Clarity Override**: Revert to full sentences for security warnings, irreversible action confirmations, and complex multi-step sequences.
 
 ---
 
@@ -436,30 +525,109 @@ For projects connecting to a shared Global LLM Wiki across multiple repos:
 
 ---
 
-## Bootstrapping a New Project
+## 4. Layer One: The Agent — `agent.md`
 
-### Path A: New Project (no existing code)
+The entry point. The only file the agent is guaranteed to read at session start.
 
-Run this sequence exactly:
+#### Copy-Pasteable `agent.md` Template
 
-1. **Create `agent.md`** at project root. Populate with: metadata schema, documentation priority rules, command reference, task→load mapping, milestones.
-2. **Create `docs/`** folder at project root.
-3. **Create `docs/ARCH_documentation-governance.md`** with: registry table, task→load mapping, canonical ownership table, naming convention, maintenance rules.
-4. **Create `docs/GUIDE_developer.md`** with: implementation rules, refactoring standards, module structure, anti-patterns.
-5. **Create initial domain docs** as placeholders using the naming convention. One concern per file.
-6. **Register everything** in `ARCH_documentation-governance.md` before use.
-7. **Verify**: The system is ready when the agent knows exactly which files to load for any task type.
+```markdown
+# Agent — [Project Name]
 
-### Path B: Existing Project (undocumented codebase)
+> **Strict Rule**: Read this file at every session start.
 
-Use this path when a project already has code but no Living Docs structure:
+## System Role
+You are a Co-Developer. You maintain institutional memory via documentation. You do not hallucinate; if a rule is missing, you ask to document it.
 
-1. **Read the codebase** — scan all files to understand actual behavior, data flow, and logic.
-2. **Identify rule areas** — group what you find into categories: architecture, business logic, standards, references.
-3. **Create doc files** — one file per concern, following the naming convention. Populate each with rules extracted from the code, not invented.
-4. **Flag intentional quirks** — any non-obvious decision or "wrong-looking" code that is correct must be marked `STUBBORN_FACT`.
-5. **Register everything** in `ARCH_documentation-governance.md`.
-6. **Populate `agent.md`** with the task→load mapping using the actual filenames created.
-7. **Verify**: The system is ready when the agent can start a fresh session, read only `agent.md`, and know exactly which files to load for any task.
+## Communication Style
+- Mode: **Terse** (as defined in `LIVING_DOC_SYSTEM.md`)
+- Filler: Disabled
+- Padding: Disabled
 
-> The system is alive when every rule has exactly one owner, every file is registered, and the agent can start a new session and know the full project state by reading `agent.md` alone.
+## Context Anchors
+- **Primary Registry**: `docs/ARCH_documentation-governance.md`
+- **Global Wiki**: `[relative/path/to/wiki]` (Optional)
+
+## Project DNA
+- **Framework**: [e.g., Python/FastAPI, Node/NextJS, Rust/CLI]
+- **Primary Pattern**: [e.g., Modular Monolith, Hexagonal, Scripting]
+- **Naming Rule**: [e.g., camelCase for UI, snake_case for Logic]
+
+## Task → Load Mapping
+> **Load sequence**: `agent.md` -> [Target Files]
+
+| Task | Files to Load |
+|------|---------------|
+| Feature Work | `GUIDE_developer.md`, relevant `LOGIC_*.md` |
+| UI / Styling | `STANDARDS_*.md` |
+| Bug Fix | `INCIDENT_*.md` (if related), relevant Logic |
+| Governance | `ARCH_documentation-governance.md` |
+
+---
+
+## Technical Standards
+- **Version Control**: [e.g., Squash-and-Merge, Linear History]
+- **Code Hygiene**: [e.g., max 50 lines per function, No God Modules]
+- **TDD**: [e.g., Tests first for every bug fix]
+
+---
+
+*v[x.y.z] — [YYYY-MM-DD]*
+```
+
+---
+
+## The Maintenance Loop (Doc Sweeps)
+
+Documentation drift is the enemy. To prevent it, the agent performs a **Doc Sweep** only when instructed.
+
+1. **Trigger**: User requests "Doc Sweep" or "Commit Prep".
+2. **Action**: The agent compares the current implementation against the registered rules.
+3. **Outcome**:
+    - If code changed behavior: Update the corresponding `LOGIC_*.md`.
+    - If a new pattern emerged: Update `GUIDE_developer.md`.
+    - If a bug was complex: Create an `INCIDENT_*.md`.
+4. **Final Step**: Increment the version number in the footer of edited docs.
+
+---
+
+## Bootstrapping Guide
+
+### Path A: New Project (Greenfield)
+1. **Initialize `agent.md`**: Use the template above. Define the project DNA.
+2. **Setup Folder**: Create `docs/` and `docs/ARCH_documentation-governance.md`.
+3. **Create Core Docs**: 
+    - Create `docs/GUIDE_developer.md` (Standard practices).
+    - Create `docs/REF_developer-reference.md` (Copy the reference-table pattern from the template in this file).
+4. **Register Everything**: Map all files in `docs/ARCH_documentation-governance.md`.
+
+### Path B: Existing Project (Brownfield)
+
+> **Warning**: Do not scan the entire codebase in one pass. Large codebases will exceed context limits and produce inaccurate docs. Use the module-by-module protocol below.
+
+This path is **doc-only**. No code is written, moved, or modified at any point. The goal is to document what already exists — nothing more.
+
+This path mirrors the structure of the Zero-Loss Refactor Protocol, applied to documentation bootstrapping instead of code. Work one module at a time. Each iteration is independently valid and human-approved before proceeding.
+
+**Iteration unit**: one module, one feature area, or one layer (e.g., auth, data models, routing).
+
+Repeat the following cycle for each unit until the entire codebase is covered:
+
+1. **Audit** — Read the target module fully. Understand actual behavior, data flow, and edge cases. Do not touch any files yet.
+2. **Create draft doc** — Write a `LOGIC_*.md` or `ARCH_*.md` based on what the code *actually does*, not what it should do. Flag any non-obvious decisions as `STUBBORN_FACT`. Flag anything uncertain as `[UNVERIFIED — needs human confirmation]`.
+3. **Bridge** — Ask the human to confirm the `[UNVERIFIED]` items. Intent cannot be inferred from code alone — this is a conversation, not a code operation. This step is the main guardrail against documenting wrong behavior as correct.
+4. **Verify** — Human approves the doc. Resolve all `[UNVERIFIED]` flags before proceeding.
+5. **Register** — Add the approved doc to `ARCH_documentation-governance.md`.
+6. **Verify again** — Check that the new doc does not conflict with any already-registered doc. If conflict found, resolve before moving to the next module.
+
+Once all modules are covered:
+
+7. **Anchor File** — Create `agent.md` to capture project DNA using the approved docs as the source of truth.
+8. **Flag Debt** — Create `REFACTOR_TODO.md` for patterns that violate established standards.
+9. **Lock State** — System is "Live" when every module has an approved doc, all docs are registered, and `agent.md` task→load mapping is complete.
+
+> **The system is live when the agent can start a fresh session, read only `agent.md`, and know exactly which files to load for any task — without asking.**
+
+---
+
+> **Final Goal**: A system where every developer (AI or human) shares the same perfect memory, enabling zero-loss handovers and instant project mobility.
