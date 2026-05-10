@@ -93,7 +93,7 @@ Three layers:
 
 Give your AI agent the following prompt:
 
-> **"Read the master template at `https://raw.githubusercontent.com/Diew/living-docs/main/LIVING_DOC_SYSTEM.md` and execute the 'Bootstrapping a New Project' sequence to initialize this current directory."**
+> **"Read the master template at `https://raw.githubusercontent.com/Diew/living-docs/main/LIVING_DOC_SYSTEM.md` and execute the 'Bootstrapping a New Project' sequence to initialize this current directory. STICK TO THE TEMPLATES VERBATIM — DO NOT SUMMARIZE."**
 
 The agent will generate the required structure (`agent.md`, the `docs/` folder, and the governance registry). If your agent doesn't support URL fetching, download `LIVING_DOC_SYSTEM.md` and attach it directly.
 

@@ -100,88 +100,17 @@ A single source of truth for doc management.
 
 **The Registry Rule**: If a file is not in this registry, it does not exist for the agent. Every new doc must be registered before use.
 
-#### Copy-Pasteable Registry Template
+Contains: file ownership table, Task→Load mapping, Canonical Ownership table, Docs Naming Convention.
 
-```markdown
-# ARCH_documentation-governance — Registry & Loading Guide
-
----
-
-## Registry & Loading Guide
-
-> **If a file is not here, register it before using it.**
-
-| File | Contains | Must NOT contain | Load when |
-|------|----------|-----------------|-----------|
-| `agent.md` | Session-critical rules, quick-reference, project metadata | Detailed implementation, full doc content | **Always** |
-| `GUIDE_developer.md` | Implementation standards, naming rules, patterns, versioning, pre-commit | Feature-specific logic, data structures | Technical work |
-| `ARCH_documentation-governance.md` | System's source of truth for doc management | Implementation content | Managing docs |
-| `ARCH_technical-specs.md` | Core architecture, data models, state flows, system boundaries | Formatting rules, UI tokens | Structural work |
-| `STANDARDS_interface.md` | Output formats, API specs, visual/CLI standards, IO rules | Business logic, algorithms | Interface/IO work |
-| `REF_developer-reference.md` | Naming examples, lookup tables, layout tables, reference data | Implementation content | Checking conventions / lookup |
-| `REFACTOR_TODO.md` | Current refactor work plan and targets | Canonical rules | Refactor planning |
-
-### Task → Load mapping
-
-| Task | Load |
-|------|------|
-| General development | `agent.md` |
-| Feature / Logic changes | `agent.md` + `GUIDE_developer.md` + relevant `LOGIC_*.md` |
-| Architecture / Data changes | + `ARCH_technical-specs.md` |
-| Interface / Output changes | + `STANDARDS_interface.md` |
-| Refactor planning | `REFACTOR_TODO.md` |
-| Documentation management | `ARCH_documentation-governance.md` |
-| Reference lookup | relevant `REF_*.md` |
-
----
-
-## Canonical Ownership
-
-| Area | Canonical file |
-|------|----------------|
-| Session-critical rules | `agent.md` |
-| Implementation standards | `GUIDE_developer.md` |
-| Docs registry / load mapping | `ARCH_documentation-governance.md` |
-| Project-specific logic | `LOGIC_*.md` |
-
----
-
-## Docs Naming Convention
-
-| Prefix | Scope |
-|--------|-------|
-| `GUIDE_` | Implementation rules and standards |
-| `ARCH_` | System architecture, data flow, structure |
-| `LOGIC_` | Feature behavior, algorithms, business rules |
-| `STANDARDS_` | Interface specs, output formats, visuals |
-| `REF_` | Reference tables, constants, lookup data |
-| `INCIDENT_` | Incident post-mortems, regression logs |
-
-**Fixed names:** `agent.md`
-
----
-
-*v[x.y.z] — [YYYY-MM-DD]*
-```
+> Full template → Copy-Pasteable Registry Template below.
 
 ---
 
 ## Task → Load Mapping
 
-The agent uses this table to decide which files to read. A version of this table belongs in `agent.md`.
+The agent loads only the files relevant to the current task — not the entire `docs/` folder. The mapping is simple: each task type has a fixed set of files to load. If the task is unclear, open `ARCH_documentation-governance.md` first.
 
-| Task | Load |
-|------|------|
-| General technical work | `agent.md` only |
-| Implementation / Standards | + relevant `GUIDE_*.md` |
-| Deep UI / Visuals / IO | + relevant `STANDARDS_*.md` |
-| Data / Structure / Routing | + relevant `ARCH_*.md` |
-| Feature-specific behavior | + relevant `LOGIC_*.md` |
-| Reference lookup | + relevant `REF_*.md` |
-| Documentation management | `ARCH_documentation-governance.md` |
-| Reviewing past failures | relevant `INCIDENT_*.md` |
-
-If the task is unclear, open `ARCH_documentation-governance.md` first.
+The authoritative task→load table lives in the **Copy-Pasteable Registry Template** below. That is the version the agent copies into `ARCH_documentation-governance.md` during bootstrapping.
 
 ---
 
@@ -256,162 +185,147 @@ The agent must **never update docs silently** as a side effect of a code task un
 
 ## Architectural Defaults (Domain-Agnostic)
 
-Use `GUIDE_` and `ARCH_` documents to enforce these patterns:
+Three domain-agnostic patterns enforced across all projects via `GUIDE_` and `ARCH_` documents:
 
-### 1. The 3-Layer Separation
-Strictly separate responsibilities into three isolated layers:
-- **Data/State Layer**: Manages raw data, database queries, API payloads, or file I/O.
-- **Processor/Helper Layer**: Pure, stateless functions that transform data.
-- **Orchestrator/Entry Layer**: The thin glue that connects data to processors and outputs the result. Orchestrators must not contain complex business logic.
+- **3-Layer Separation**: Data/State → Processor/Helper → Orchestrator/Entry. Orchestrators must not contain business logic.
+- **State & Storage Registry**: All global state identifiers (cache keys, env vars, DB tables) must be registered in an `ARCH_` document. No ad-hoc keys.
+- **Namespace & Collision Governance**: Strict prefixes for shared resources. Priority hierarchy documented when resources conflict.
 
-### 2. State & Storage Registry
-If the system maintains state (e.g., Cache, Environment Variables, Database Tables, LocalStorage, Memory pools), it must be explicitly registered in an `ARCH_` document.
-- **Rule**: No ad-hoc or undocumented keys/variables. All global state identifiers must be centralized to prevent collision and ensure predictable cache invalidation.
-
-### 3. Namespace & Collision Governance
-Define strict naming boundaries for shared resources to prevent collision.
-- **Resource Namespaces**: Use prefixes for global resources (e.g., API routes `/api/v1/`, Env vars `APP_DB_*`, UI tokens `.ui-`).
-- **Priority Layering**: If resources stack or conflict (e.g., execution order, system ports, visual Z-indexes), define an absolute hierarchy in the documentation.
+> Full rules and examples → Copy-Pasteable `GUIDE_developer.md` Template below.
 
 ---
 
 ## Execution Protocols
 
-### Pre-Commit Checklist
+Protocols split across two files based on load frequency:
 
-1. **Test**: Run full test suite. All tests must pass.
-2. **Bump**: Use the project's bump script — never manually edit version numbers.
-3. **Docs**: Add changelog notes to the new version header only. Never insert into old entries.
-4. **Build**: Confirm production build passes.
-5. **Clean**: Remove debug statements, fix TODOs, delete scratch files.
-6. **Git**: No `push` or `commit` without explicit user approval per action.
+- **`agent.md`** (session-critical, loaded every session): Pre-Commit Checklist, TDD Decision Rule, Goal-Driven Execution, When to Stop and Ask, Common Mistakes, Communication Style.
+- **`docs/GUIDE_developer.md`** (loaded on-demand): Zero-Loss Refactor Protocol, When to Extract a Function, When to Split a File, Module Structure Rules, Naming Conventions.
 
-### Refactoring (Zero-Loss Protocol)
+> Full rules → Copy-Pasteable `agent.md` Template and `GUIDE_developer.md` Template below.
 
-Use for any file split, large refactor, or move:
+### Key behaviors (summary)
 
-1. **Audit** — Read existing code fully before touching it.
-2. **Create targets** — New structure in place before removing old code.
-3. **Bridge** — Re-exports or adapters connect old to new.
-4. **Verify** — Typecheck + tests pass.
-5. **Cut** — Remove old code only after behavior is confirmed stable.
-6. **Verify again** — Run full suite after cleanup.
+**Goal-Driven Execution**: Before any multi-step task, state a brief plan: `[Step] → verify: [check]`. Never guess → build → fix → repeat.
 
-Do not skip the bridge phase. It is the main guardrail against broken imports.
+**When to Stop and Ask**: Stop and ask **one** question when task scope is wider than described, contradicts a rule or `STUBBORN_FACT`, requires deleting content, is ambiguous between two valid interpretations, or lacks test coverage and requires TDD. Never ask more than one question per stop.
 
-### When to Extract a Function
-
-| Trigger | Action |
-|---------|--------|
-| Logic appears **2+ times** | Extract immediately — no exceptions |
-| Function body exceeds **20 lines** | Extract inner logic into named helpers |
-| Expression requires a comment to understand | Extract into a named function |
-| Template/string contains repeated structure | Extract into a builder function |
-
-### When to Split a File
-
-| Trigger | Action |
-|---------|--------|
-| File exceeds **200 lines** | Review — split if multiple responsibilities |
-| File exceeds **400 lines** | Split mandatory — one responsibility per file |
-| File contains 2+ unrelated concept groups | Split regardless of line count |
-| A function is reused across 2+ files | Move to a shared helper file |
-
-### Code Naming Conventions (Domain-Agnostic)
-
-| Type | Rule | Do | Don't |
-|------|------|----|-------|
-| Functions | `camelCase`, verb + noun | `getItemById`, `fetchSchema` | `doStuff`, `thing` |
-| Variables | intent first, avoid generic names | `itemList`, `configData` | `data`, `tmp` |
-| Booleans | prefix `is` / `has` / `can` / `should` | `isValid`, `hasItems` | `flag`, `state` |
-| Event handlers | prefix `handle` + target + event | `handleSubmitClick`, `handleFilterChange` | `onClick`, `clickHandler` |
-| Async functions | action-oriented, name what is fetched or saved | `fetchItemList`, `saveUserSettings` | `getData`, `loadStuff` |
-| Data objects | context + subject + type | `UserAuthInfo`, `systemStateMap` | `payload`, `thingObject` |
-| Files (logic) | responsibility-first, use role suffix when useful | `storage-manager.ts`, `board-renderer.ts` | `utils.ts`, `misc.ts` |
-
-> Naming rules live here as the bootstrap-friendly default. Put longer examples and edge cases in `REF_developer-reference.md` or a project-specific `REF_*.md`.
-
-### Module Structure Rules
-
-| Rule | Detail |
-|------|--------|
-| One responsibility per file | A file does one thing: builds one section, processes one data type, or holds one group of helpers |
-| Orchestrators stay thin | Entry-point files contain only: data calls, cache logic, output rendering, trigger/event handling |
-| Responsibility-first naming | Filenames must reflect their role: `*-controller.ts`, `*-renderer.ts`, `*-processor.ts` |
-| Helpers are stateless | Helper functions must be pure — no side effects, no global reads |
-| Shared helpers live in one place | If 2+ files need the same helper, extract to a shared `*-helpers` file — never duplicated |
-| Import direction is one-way | Helpers never import from orchestrators. Processors never import from renderers |
-
-### Goal-Driven Execution
-
-Before any multi-step task, state a brief plan: `[Step] → verify: [check]`.
-
-Transform vague tasks into verifiable goals. Never guess → build → fix → repeat.
-
-### When to Stop and Ask
-
-Stop before acting and ask **one** question when any of the following is true:
-
-| Trigger | Reason |
-|---------|--------|
-| Task scope is wider than described — would touch files not mentioned | Risk of unintended side effects |
-| Task contradicts a rule in `docs/` or a `STUBBORN_FACT` | Cannot resolve conflict without human intent |
-| Task requires deleting or overwriting existing content | Irreversible — must confirm |
-| Task is ambiguous enough that two valid interpretations produce different outcomes | Guessing here = regression |
-| Code to be modified has no test coverage and task requires TDD | Cannot verify safety without tests first |
-
-Never ask more than one question per stop. Pick the most blocking unknown.
-
-### TDD Decision Rule
-
-- **Use TDD for**: logic, data processing, routing, rendering output, business rules.
-- **Skip TDD for**: docs, copy, rename, formatting, cosmetic edits.
+**TDD Decision Rule**: Use TDD for logic, data processing, routing, rendering, business rules. Skip for docs, copy, rename, formatting, cosmetic edits.
 
 ---
 
 ## Common Mistakes (Anti-Patterns)
 
-These apply to all projects using this system:
+8 session-critical guardrails copied verbatim into `agent.md` during bootstrapping: no unsolicited refactor, no adding to old changelog entries, no rule duplication, no loading unneeded files, no manual version bumps, no assuming without confirming, no unrelated edits in one pass, no skipping the registry.
 
-| Mistake | Why it fails | Prevention |
-|---------|-------------|------------|
-| Refactoring working code without being asked | Breaks stable behavior, wastes context | Only refactor on explicit request |
-| Adding work to an existing changelog entry | Corrupts version history | New task = new version header always |
-| Duplicating a rule across multiple files | Creates conflicts when one is updated | One file owns each rule — link, don't copy |
-| Loading files not needed for the current task | Context bloat, slower reasoning | Follow the Task → Load Mapping table |
-| Manual version bumps | Causes version drift across files | Always use the bump script |
-| Assuming without confirming | Destroys trust, causes regressions | If unsure, ask one question |
-| Changing unrelated files in the same edit | Scope creep, harder to review | One edit = one concern |
-| Skipping the registry when adding a doc | Doc becomes invisible to AI | Register before use, always |
+> Full table → Copy-Pasteable `agent.md` Template below.
 
 ---
 
 ## Communication Style
 
-Answer only what is asked. No intro, recap, filler, or padding. Fragments acceptable. Short synonyms preferred. Technical terms exact. Code blocks unchanged. Errors quoted exactly.
+Answer only what is asked. No intro, recap, filler, or padding. Pattern: `[thing] [action] [reason]. [next step].` Drop articles, pleasantries, and hedging. Use fragments. Auto-Clarity Override: revert to full sentences for security warnings and irreversible actions.
 
-**Pattern**: `[thing] [action] [reason]. [next step].`
-
-### Rules for Terse Communication
-
-1.  **Drop articles & fillers**: a, an, the, just, really, basically, actually, simply.
-2.  **Drop pleasantries**: "Sure!", "I'd be happy to", "Certainly", "Of course", "Great question".
-3.  **No hedging**: "I think", "It might be", "Perhaps". If unsure, ask one question.
-4.  **Use fragments**: "Bug in auth. Fix:" instead of "I found a bug in the auth module and I am going to fix it."
-
-### Example Comparison
-
-| User Request | ❌ Bad Response | ✅ Good Response |
-|--------------|----------------|------------------|
-| Add a new user field | "Sure! I can definitely help with that. I will start by adding the 'age' field to the User model..." | "User model updated. Added 'age' (int). Migration generated. Ready to apply." |
-| Why is this failing? | "It seems like the error is caused by a null pointer. You might want to check the initialization..." | "Null pointer in `AuthService.ts:42`. `currentUser` undefined. Fix: initialize in constructor." |
-| Refactor this function | "I have carefully reviewed the code and I think we should extract this part to a helper. Does that sound okay?" | "Function exceeds 20 lines. Logic for 'tax_calc' extracted to helper. Tests pass. Ready to cut." |
-
-**Auto-Clarity Override**: Revert to full sentences for security warnings, irreversible action confirmations, and complex multi-step sequences.
+> Full rules and examples → Copy-Pasteable `agent.md` Template below.
 
 ---
 
 ## Standard Document Templates
+
+### Copy-Pasteable Registry Template
+
+> **Strict Rule**: Copy this entire template verbatim — every table, section, and row.
+
+```markdown
+# ARCH_documentation-governance — Registry & Loading Guide
+
+---
+
+## Registry & Loading Guide
+
+> **If a file is not here, register it before using it.**
+
+| File | Contains | Must NOT contain | Load when |
+|------|----------|-----------------|-----------|
+| `agent.md` | Session-critical rules, quick-reference, project metadata | Detailed implementation, full doc content | **Always** |
+| `GUIDE_developer.md` | Implementation standards, naming rules, patterns, versioning, pre-commit | Feature-specific logic, data structures | Technical work |
+| `ARCH_documentation-governance.md` | System's source of truth for doc management | Implementation content | Managing docs |
+| `ARCH_technical-specs.md` | Core architecture, data models, state flows, system boundaries | Formatting rules, UI tokens | Structural work |
+| `STANDARDS_interface.md` | Output formats, API specs, visual/CLI standards, IO rules | Business logic, algorithms | Interface/IO work |
+| `REF_developer-reference.md` | Naming examples, lookup tables, layout tables, reference data | Implementation content | Checking conventions / lookup |
+| `REF_template.md` | Blank template for creating new doc files | Rules, implementation content | Creating a new doc file |
+| `REFACTOR_TODO.md` | Current refactor work plan and targets | Canonical rules | Refactor planning |
+
+### Task → Load mapping
+
+| Task | Load |
+|------|------|
+| General development | `agent.md` |
+| Feature / Logic changes | `agent.md` + `GUIDE_developer.md` + relevant `LOGIC_*.md` |
+| Implementation / Standards | + relevant `GUIDE_*.md` |
+| Architecture / Data changes | + relevant `ARCH_*.md` |
+| Interface / Output changes | + relevant `STANDARDS_*.md` |
+| Reference lookup | + relevant `REF_*.md` |
+| Refactor planning | `REFACTOR_TODO.md` |
+| Documentation management | `ARCH_documentation-governance.md` |
+| Reviewing past failures | + relevant `INCIDENT_*.md` |
+
+---
+
+## Canonical Ownership
+
+Use one file as the source of truth for each rule group.
+
+| Area | Canonical file |
+|------|----------------|
+| Session-critical rules | `agent.md` |
+| Implementation standards | `GUIDE_developer.md` |
+| Docs registry / load mapping | `ARCH_documentation-governance.md` |
+| Project-specific logic | `LOGIC_*.md` |
+
+---
+
+## Docs Naming Convention
+
+| Prefix | Scope |
+|--------|-------|
+| `GUIDE_` | Implementation rules and standards |
+| `ARCH_` | System architecture, data flow, structure |
+| `LOGIC_` | Feature behavior, algorithms, business rules |
+| `STANDARDS_` | Interface specs, output formats, visuals |
+| `REF_` | Reference tables, constants, lookup data |
+| `INCIDENT_` | Incident post-mortems, regression logs |
+
+**Fixed names (no prefix, must not rename):** `agent.md`
+
+**Fallback rule:** If a file is not in the registry → read prefix → load only if task matches → flag to user that registry needs updating.
+
+---
+
+## Maintenance Rules
+
+**One rule above all: content exists in ONE file only. No duplication.**
+**Compact, not incomplete: remove empty sections, never remove rules, edge cases, or reference rows.**
+
+### Adding a new doc
+1. Pick prefix from naming convention table.
+2. Register in the Registry table above (mandatory).
+
+### Moving content
+1. Copy to destination → verify complete → delete from source → update any references.
+
+### Editing existing files
+- `agent.md`: session-critical rules and metadata only.
+- `GUIDE_*`: coding standards + basic UI. No deep visual rules.
+- `STANDARDS_*`: visual/interaction only. No coding standards.
+- Registry table: update immediately when any file is added, renamed, or removed.
+
+---
+
+*v[x.y.z] — [YYYY-MM-DD]*
+```
+
+---
 
 ### General Doc Template (`REF_template.md` pattern)
 
@@ -514,6 +428,230 @@ Objective: [One sentence goal.]
 
 ---
 
+### Copy-Pasteable `GUIDE_developer.md` Template
+
+> **Strict Rule**: Copy this entire template verbatim — every subsection, table, and rule. Do not summarize or omit any rows. Add project-specific content in the marked placeholders.
+
+```markdown
+# GUIDE_developer — Implementation rules for [Project Name]
+
+---
+
+## Rules
+
+> Hard constraints. AI must follow unconditionally. Add project-specific rules here.
+
+| Rule | Detail |
+|------|--------|
+| No unsolicited refactor | Never refactor working code unless explicitly asked |
+| Git operations | No push or commit without explicit user approval |
+| TDD | Write or update tests before implementation for anything affecting data, routing, rendering, or business logic |
+| [project rule] | [what it means in practice] |
+
+---
+
+## Refactoring Standards
+
+| Rule | Detail |
+|------|--------|
+| No unsolicited refactor | Never refactor working code unless explicitly asked — even if it violates standards above |
+
+### When to Extract a Function
+
+| Trigger | Action |
+|---------|--------|
+| Logic or template appears **2+ times** | Extract immediately — no exceptions |
+| Function body exceeds **20 lines** | Extract inner logic into named helpers |
+| Inline expression requires a comment to understand | Extract into a named function instead |
+| Template string contains repeated HTML structure | Extract into a builder function |
+
+
+### When to Split a File
+
+| Trigger | Action |
+|---------|--------|
+| File exceeds **200 lines** | Review — split if multiple responsibilities |
+| File exceeds **400 lines** | Split mandatory — one responsibility per file |
+| File contains 2+ unrelated concept groups | Split regardless of line count |
+| A function is reused across 2+ files | Move to a shared helper file |
+
+### Module Structure Rules
+
+| Rule | Detail |
+|------|--------|
+| One responsibility per file | A file does one thing: builds one section, processes one data type, or holds one group of helpers |
+| Orchestrators stay thin | Entry-point files contain only: data calls, cache logic, output rendering, event binding |
+| Helpers are stateless | Helper functions must be pure — no side effects, no global reads |
+| Shared helpers live in one place | If 2+ files need the same helper, extract to a shared `*-helpers` file — never duplicated |
+| Import direction is one-way | Helpers never import from orchestrators. Processors never import from renderers |
+
+### Zero-Loss Refactor Protocol
+
+Use for any file split, large refactor, or move:
+
+1. **Audit** first
+2. **Create targets** before removing old code
+3. **Bridge** with re-exports or adapters
+4. **Verify** with typecheck and tests
+5. **Cut** only after behavior is stable
+6. **Verify again** after cleanup
+
+Do not skip the bridge phase for large moves. It is the main guardrail against broken imports and partial refactors.
+
+Other docs should name this protocol, not duplicate its full steps.
+
+### Anti-Patterns (Banned)
+
+| Pattern | Why it fails | Fix |
+|---------|-------------|-----|
+| Logic duplicated across files | Conflicts when one is updated | Extract to shared helper |
+| One file doing data + rendering + events | Violates SRP, hard to cache | Split into processor / renderer / controller |
+| Importing a full module for one constant | Unnecessary coupling | Move constant to shared constants file |
+| [project-specific pattern] | [why] | [fix] |
+
+---
+
+## Architectural Defaults
+
+### State & Storage Registry
+If the system maintains state (e.g., Cache, Environment Variables, Database Tables, LocalStorage, Memory pools), it must be explicitly registered in an `ARCH_` document.
+- **Rule**: No ad-hoc or undocumented keys/variables. All global state identifiers must be centralized to prevent collision and ensure predictable cache invalidation.
+
+### Namespace & Collision Governance
+Define strict naming boundaries for shared resources to prevent collision.
+- **Resource Namespaces**: Use prefixes for global resources (e.g., API routes `/api/v1/`, Env vars `APP_DB_*`, UI tokens `.ui-`).
+- **Priority Layering**: If resources stack or conflict (e.g., execution order, system ports, visual Z-indexes), define an absolute hierarchy in the documentation.
+
+---
+
+## Reference
+
+Reference tables: [REF_developer-reference.md](./REF_developer-reference.md).
+
+---
+
+## Edge Cases
+
+- **[case]**: [what to do]
+
+---
+
+*v[x.y.z] — [YYYY-MM-DD]*
+```
+
+---
+
+### Copy-Pasteable `REF_developer-reference.md` Template
+
+> **Strict Rule**: Copy this entire template verbatim — every table and row. Add project-specific tables below the Naming Conventions section.
+
+```markdown
+# REF_developer-reference — Developer reference tables
+
+> Reference only. Rules live in `GUIDE_developer.md`.
+
+---
+
+## Reference
+
+### Naming Conventions
+
+| Type | Rule | Do | Don't |
+|------|------|----|-------|
+| Functions | `camelCase`, verb + noun | `getItemById`, `fetchSchema` | `doStuff`, `thing` |
+| Variables | intent first, avoid generic names | `itemList`, `configData` | `data`, `tmp` |
+| Booleans | prefix `is` / `has` / `can` / `should` | `isValid`, `hasItems` | `flag`, `state` |
+| Event handlers | prefix `handle` + target + event | `handleSubmitClick`, `handleFilterChange` | `onClick`, `clickHandler` |
+| Async functions | action-oriented, name what is fetched or saved | `fetchItemList`, `saveUserSettings` | `getData`, `loadStuff` |
+| Data objects | context + subject + type | `UserAuthInfo`, `systemStateMap` | `payload`, `thingObject` |
+| Files (logic) | responsibility-first, use role suffix when useful | `storage-manager.ts`, `board-renderer.ts` | `utils.ts`, `misc.ts` |
+
+### Commands
+
+| Command | Purpose |
+|---------|---------|
+| `[dev command]` | Local development |
+| `[test command]` | Run tests |
+| `[build command]` | Production build |
+| `[bump command]` | Sync version across all files |
+
+### Version
+
+| Item | Detail |
+|------|--------|
+| Source of truth | `[e.g., package.json]` |
+| Bump command | `[bump command]` |
+| Files auto-updated | `[list of files]` |
+
+### [Project-Specific Reference Tables]
+> Add lookup tables, constants, endpoints, or other reference data here.
+
+| Item | Value | Notes |
+|------|-------|-------|
+| [item] | [value] | [notes] |
+
+---
+
+*v[x.y.z] — [YYYY-MM-DD]*
+```
+
+---
+
+### Copy-Pasteable `STANDARDS_*.md` Template
+
+> Use for visual, interface, and IO specifications. One file per domain (e.g., `STANDARDS_ui-visual.md`, `STANDARDS_api.md`). Add project-specific rules and reference tables — do not leave placeholders empty; populate from the actual codebase.
+
+```markdown
+# STANDARDS_[domain] — [Visual / Interface / IO] specifications for [Project Name]
+
+---
+
+## Rules
+
+> Hard constraints for this domain. AI must follow unconditionally.
+
+| Rule | Detail |
+|------|--------|
+| No magic numbers | All values must come from tokens or shared constants |
+| [domain rule] | [what it means in practice] |
+
+---
+
+## [Domain] Reference
+
+### Color System / Design Tokens
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `[token]` | `[value]` | [where it's used] |
+
+### Component Standards
+
+| Component | Class / Pattern | Purpose |
+|-----------|----------------|---------|
+| [component] | [class] | [purpose] |
+
+### Layout
+
+| Item | Value |
+|------|-------|
+| [layout item] | [value] |
+
+---
+
+## Edge Cases
+
+> Only document cases that are non-obvious or have caused regressions.
+
+- **[case]**: [what to do]
+
+---
+
+*v[x.y.z] — [YYYY-MM-DD]*
+```
+
+---
+
 ## Cross-Project Setup (Global LLM Wiki)
 
 For projects connecting to a shared Global LLM Wiki across multiple repos:
@@ -525,50 +663,98 @@ For projects connecting to a shared Global LLM Wiki across multiple repos:
 
 ---
 
-## 4. Layer One: The Agent — `agent.md`
+## Copy-Pasteable `agent.md` Template
 
 The entry point. The only file the agent is guaranteed to read at session start.
 
-#### Copy-Pasteable `agent.md` Template
+> **Strict Rule**: Copy this entire template verbatim — every section, table, and rule. Fill in project-specific values but do not omit any section.
 
 ```markdown
-# Agent — [Project Name]
+# Agent — [Project Name] (v[x.y.z]) — [YYYY-MM-DD]
 
 > **Strict Rule**: Read this file at every session start.
 
-## System Role
-You are a Co-Developer. You maintain institutional memory via documentation. You do not hallucinate; if a rule is missing, you ask to document it.
+## Project Setup
+- **Project Name**: [Name]
+- **Version**: [x.y.z] — use bump script only, never manually edit
+- **Status**: [Active / Maintenance / Legacy]
+- **Tech Stack**: [Core languages, frameworks, runtimes]
+- **Context Anchors**: [Links to Global LLM Wiki or cross-project references]
 
-## Communication Style
-- Mode: **Terse** (as defined in `LIVING_DOC_SYSTEM.md`)
-- Filler: Disabled
-- Padding: Disabled
+## Documentation Priority
+- `docs/` is the source of truth for behavior, architecture, and implementation rules.
+- `agent.md` holds only: session-critical rules, quick-reference checklists, metadata.
+- Do not duplicate detailed explanations here — link to `docs/` instead.
+- **Scope unclear?** Open `docs/ARCH_documentation-governance.md` first — task→load mapping is there.
 
-## Context Anchors
-- **Primary Registry**: `docs/ARCH_documentation-governance.md`
-- **Global Wiki**: `[relative/path/to/wiki]` (Optional)
+## Documentation Governance
+- **Implementation Standards**: `docs/GUIDE_developer.md` — how we write code, refactor, and test.
+- **Architecture & Data**: `docs/ARCH_technical-specs.md` — data models, routing, system boundaries.
+- **Visual & IO Standards**: `docs/STANDARDS_*.md` — design tokens, output formats, interface specs.
+- **Rule**: Never consolidate these files without explicit intent. Keep concerns isolated to prevent accidental regressions.
 
-## Project DNA
-- **Framework**: [e.g., Python/FastAPI, Node/NextJS, Rust/CLI]
-- **Primary Pattern**: [e.g., Modular Monolith, Hexagonal, Scripting]
-- **Naming Rule**: [e.g., camelCase for UI, snake_case for Logic]
+## AI Technical Governance (CRITICAL)
 
-## Task → Load Mapping
-> **Load sequence**: `agent.md` -> [Target Files]
+## TDD Decision Rule
+- **Use TDD** for: logic, data processing, routing, rendering output, business rules.
+- **Skip TDD** for: docs, copy, rename, formatting, cosmetic edits.
 
-| Task | Files to Load |
-|------|---------------|
-| Feature Work | `GUIDE_developer.md`, relevant `LOGIC_*.md` |
-| UI / Styling | `STANDARDS_*.md` |
-| Bug Fix | `INCIDENT_*.md` (if related), relevant Logic |
-| Governance | `ARCH_documentation-governance.md` |
+## Goal-Driven Execution
+Verify → trace → build → confirm. Never guess → build → fix → repeat.
+Before multi-step tasks, state a brief plan: `[Step] → verify: [check]`.
 
----
+## Response Style (CRITICAL)
+- Answer only what's asked. No intro, recap, outro, filler, or padding.
+- Markdown only when it helps (tables, code blocks).
+- Unsure → ask **one** question. No assumptions.
 
-## Technical Standards
-- **Version Control**: [e.g., Squash-and-Merge, Linear History]
-- **Code Hygiene**: [e.g., max 50 lines per function, No God Modules]
-- **TDD**: [e.g., Tests first for every bug fix]
+### Writing Rules
+Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), hedging. Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"). Technical terms exact. Code blocks unchanged. Errors quoted exact.
+
+Pattern: `[thing] [action] [reason]. [next step].`
+
+- ❌ "Sure! I'd be happy to help you with that. The issue you're experiencing is likely caused by..."
+- ✅ "Bug in auth middleware. Token expiry check use `<` not `<=`. Fix:"
+- "Why React component re-render?" → "New object ref each render. Inline object prop = new ref = re-render. Wrap in `useMemo`."
+- "Explain database connection pooling." → "Pool reuse open DB connections. No new connection per request. Skip handshake overhead."
+
+### Auto-Clarity
+Revert to full sentences for: security warnings, irreversible action confirmations, multi-step sequences where fragment order risks misread. Resume terse after.
+
+### Boundaries
+Code blocks, commit messages, PR descriptions: write normal always.
+
+## Common Mistakes
+| Mistake | Prevention |
+|---------|------------|
+| Refactoring working code without being asked | Only refactor on explicit request |
+| Adding work to an existing changelog entry | New task = new version header always |
+| Duplicating a rule across multiple files | One file owns each rule — link, don't copy |
+| Manual version bumps | Always use the bump script |
+| Assuming without confirming | If unsure, ask one question |
+| Changing unrelated files in the same edit | One edit = one concern |
+| Skipping the registry when adding a doc | Register before use, always |
+
+## Pre-Commit Protocol
+1. **Test**: Run full test suite. All tests must pass.
+2. **Bump**: Use bump script — never manually edit version numbers.
+3. **Docs**: Add notes to new version header only. Never insert into old entries.
+4. **Build**: Confirm production build passes.
+5. **Clean**: Remove debug statements, fix TODOs, delete scratch files.
+6. **Git**: No `push` or `commit` without explicit user approval per action.
+
+## Milestones
+- [x] v[x.y.z]: [Description of major milestone]
+- [ ] v[x.y.z]: [Planned milestone]
+
+## Commands
+- `[dev command]`: local development.
+- `[test command]`: run tests.
+- `[build command]`: production build.
+- `[bump command]`: sync version across all files. Never manually edit version numbers.
+
+## Project Notes
+> Add project-specific state, quick-reference data, or active constraints here (e.g., board status, feature flags, intentional quirks).
 
 ---
 
@@ -593,13 +779,19 @@ Documentation drift is the enemy. To prevent it, the agent performs a **Doc Swee
 
 ## Bootstrapping Guide
 
+> **Strict Rule for Bootstrapping**: When executing a bootstrapping sequence, you **MUST NOT** summarize, omit, or paraphrase content from the master template. Every section, table, and rule specified in the bootstrap steps must be copied **verbatim** to ensure no institutional knowledge is lost.
+
+
 ### Path A: New Project (Greenfield)
-1. **Initialize `agent.md`**: Use the template above. Define the project DNA.
-2. **Setup Folder**: Create `docs/` and `docs/ARCH_documentation-governance.md`.
-3. **Create Core Docs**: 
-    - Create `docs/GUIDE_developer.md` (Standard practices).
-    - Create `docs/REF_developer-reference.md` (Copy the reference-table pattern from the template in this file).
-4. **Register Everything**: Map all files in `docs/ARCH_documentation-governance.md`.
+1. **Initialize `agent.md`**: Create this file at the project root using the **Copy-Pasteable `agent.md` Template** from this document. The template includes Communication Style, Common Mistakes, TDD rules, Pre-Commit Protocol, and Goal-Driven Execution — fill in project-specific values but do not omit any section.
+2. **Setup Folder**: Create `docs/` directory.
+3. **Create Registry**: Create `docs/ARCH_documentation-governance.md` using the **Copy-Pasteable Registry Template** from this document. You **MUST** copy the entire template verbatim — every table, section, and row.
+4. **Create Core Docs**: 
+    - Create `docs/GUIDE_developer.md` using the **Copy-Pasteable `GUIDE_developer.md` Template** from this document. You **MUST** also extract and copy the entire `## Architectural Defaults (Domain-Agnostic)` section into it — including every subsection, table, and rule. Do not summarize or omit any rows.
+    - Create `docs/REF_developer-reference.md` using the **Copy-Pasteable `REF_developer-reference.md` Template** from this document — including every row of the Naming Conventions table.
+    - Create `docs/REF_template.md` using the **General Doc Template** from this document. This file is the reference template for all future doc creation — copy it verbatim.
+    - Create `docs/STANDARDS_*.md` using the **Copy-Pasteable `STANDARDS_*.md` Template** for each visual/IO domain in the project.
+5. **Register Everything**: Map all files in `docs/ARCH_documentation-governance.md`.
 
 ### Path B: Existing Project (Brownfield)
 
@@ -607,7 +799,28 @@ Documentation drift is the enemy. To prevent it, the agent performs a **Doc Swee
 
 This path is **doc-only**. No code is written, moved, or modified at any point. The goal is to document what already exists — nothing more.
 
-This path mirrors the structure of the Zero-Loss Refactor Protocol, applied to documentation bootstrapping instead of code. Work one module at a time. Each iteration is independently valid and human-approved before proceeding.
+#### Step 0: Check for existing docs
+
+Before anything else, check what already exists:
+
+- **No `agent.md` or `docs/` found** → proceed to Step 1.
+- **`agent.md` or `docs/` found (partial or full)** → audit existing files first. Read every existing doc, note what each contains, flag conflicts or gaps. Do not overwrite anything yet. Use findings to inform Steps 1–2 below — merge with templates, do not replace.
+
+#### Step 1: Copy core templates (do this before auditing any code)
+
+While context is fresh, copy all core templates verbatim from this document:
+
+- Create `docs/GUIDE_developer.md` using the **Copy-Pasteable `GUIDE_developer.md` Template**. You **MUST** copy every section, table, and rule verbatim. Do not summarize or omit any rows.
+- Create `docs/REF_developer-reference.md` using the **Copy-Pasteable `REF_developer-reference.md` Template** — including every row of the Naming Conventions table.
+- Create `docs/REF_template.md` using the **General Doc Template** from this document. This file is the reference template for all future doc creation — copy it verbatim.
+- Create `docs/STANDARDS_*.md` using the **Copy-Pasteable `STANDARDS_*.md` Template** for each visual/IO domain in the project.
+- Create `docs/ARCH_documentation-governance.md` using the **Copy-Pasteable Registry Template**. Copy the entire template verbatim — every table, section, and row.
+- Create `agent.md` using the **Copy-Pasteable `agent.md` Template**. Do not omit any section — fill in project-specific values in Steps 3–6 below.
+- Create `docs/REFACTOR_TODO.md` using the **Refactor Work Plan Template** from this document. Leave all sections empty — this file is required even if no debt is found yet.
+
+> If existing docs were found in Step 0: merge their content into the templates now. Existing rules take precedence over placeholder text. Do not discard institutional knowledge.
+
+#### Step 2: Audit the codebase (module by module)
 
 **Iteration unit**: one module, one feature area, or one layer (e.g., auth, data models, routing).
 
@@ -620,11 +833,25 @@ Repeat the following cycle for each unit until the entire codebase is covered:
 5. **Register** — Add the approved doc to `ARCH_documentation-governance.md`.
 6. **Verify again** — Check that the new doc does not conflict with any already-registered doc. If conflict found, resolve before moving to the next module.
 
-Once all modules are covered:
+#### Step 3: Fill in project-specific values
 
-7. **Anchor File** — Create `agent.md` to capture project DNA using the approved docs as the source of truth.
-8. **Flag Debt** — Create `REFACTOR_TODO.md` for patterns that violate established standards.
-9. **Lock State** — System is "Live" when every module has an approved doc, all docs are registered, and `agent.md` task→load mapping is complete.
+Once all modules are covered, fill in placeholders across all files created in Step 1:
+
+- `agent.md` — Project name, version, tech stack, commands, milestones. Task→load mapping must reflect all registered docs.
+- `docs/ARCH_documentation-governance.md` — Register all `LOGIC_*.md` and `ARCH_*.md` created in Step 2.
+- `docs/STANDARDS_*.md` — Replace placeholder tokens with actual values from the codebase.
+
+#### Step 4: Final checks
+
+- **Flag Debt**: Fill in `REFACTOR_TODO.md` (created in Step 1) with any patterns that violate established standards found during the audit.
+- **Lock State**: System is "Live" when all docs are registered, and `agent.md` task→load mapping is complete.
+
+**Completion checklist:**
+- [ ] `agent.md` exists and has no unfilled placeholders
+- [ ] `docs/ARCH_documentation-governance.md` lists every doc in `docs/`
+- [ ] Every `LOGIC_*.md` and `ARCH_*.md` has no `[UNVERIFIED]` flags remaining
+- [ ] Task→load mapping covers all registered doc prefixes
+- [ ] `REFACTOR_TODO.md` created (even if empty)
 
 > **The system is live when the agent can start a fresh session, read only `agent.md`, and know exactly which files to load for any task — without asking.**
 
