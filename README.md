@@ -59,7 +59,7 @@ Because `ARCH_documentation-governance.md` contains a Task→Load Mapping, the a
 | Start a task with correct context | `I want to add X, read the relevant docs first` |
 | Audit codebase and log violations | `audit this folder, write down what needs fixing` |
 | Update docs after a task | `run a doc sweep` |
-| Bootstrap a new project | `read LIVING_DOC_SYSTEM.md and initialize this directory` |
+| Bootstrap a new project | `Read LIVING_DOC_SYSTEM.md and execute the 'Bootstrapping' sequence` |
 | Flag intentional quirks | `flag any STUBBORN_FACTs you find` |
 | Split an oversized file | `refactor this file, zero-loss protocol` |
 
@@ -89,11 +89,19 @@ Three layers:
 
 **The schema** — `agent.md` plus the governance doc. Tells the agent how the doc system works, which file owns what, and what workflows to follow.
 
+## The First Question
+
+When you give an agent the master template, it is instructed to stop and ask you exactly one question before doing anything:
+
+> **"Does this project have existing code?"**
+
+**Do not let it proceed without answering.** This choice determines whether the agent follows **Path A (Greenfield)** or **Path B (Brownfield)**. If you have an existing codebase, the agent must audit it module-by-module to extract rules from actual behavior before writing any documentation.
+
 ## Quick Start (Bootstrapping a New Project)
 
 Give your AI agent the following prompt:
 
-> **"Read the master template at `https://raw.githubusercontent.com/Diew/living-docs/main/LIVING_DOC_SYSTEM.md` and execute the 'Bootstrapping a New Project' sequence to initialize this current directory. STICK TO THE TEMPLATES VERBATIM — DO NOT SUMMARIZE."**
+> **"Read the master template at `https://github.com/Diew/living-docs/blob/main/LIVING_DOC_SYSTEM.md` and execute the 'Bootstrapping a New Project' sequence to initialize this current directory. STICK TO THE TEMPLATES VERBATIM — DO NOT SUMMARIZE."**
 
 The agent will generate the required structure (`agent.md`, the `docs/` folder, and the governance registry). If your agent doesn't support URL fetching, download `LIVING_DOC_SYSTEM.md` and attach it directly.
 
@@ -111,8 +119,10 @@ docs/
   ARCH_documentation-governance.md   ← registry: what each file owns, when to load it
   GUIDE_developer.md                  ← coding standards, TDD, refactor protocol
   REF_developer-reference.md          ← naming conventions, directory structure
+  REF_template.md                     ← blank template for new doc files
   STANDARDS_ui-visual.md              ← design tokens, layout rules (placeholders)
   REFACTOR_TODO.md                    ← technical debt tracker (empty)
+  INCIDENT_*.md                       ← (optional) post-mortems and regression logs
 ```
 
 Files like `LOGIC_*.md` and `INCIDENT_*.md` are created later — when you have a feature complex enough to document, or a bug worth remembering. Every session that changes the code can add to these files. That's what makes them living.
