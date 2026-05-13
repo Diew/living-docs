@@ -1,10 +1,9 @@
 # Living Docs
 
-> Read this file. Then ask exactly one question before doing anything else:
-> **"Does this project have existing code?"**
-> - Yes → follow Path B (Brownfield) in the Bootstrapping Guide.
-> - No → follow Path A (Greenfield) in the Bootstrapping Guide.
-> Do not assume. Do not proceed without an answer.
+> Before doing anything else, ask the user exactly one question:
+> **"Do you want to implement this system, or just explore it?"**
+> - Implement → ask "Does this project have existing code?" then follow Path A or B
+> - Explore → read and answer questions only, do not bootstrap anything
 
 This document defines the **Living Docs** system — a self-maintaining documentation architecture for technical projects. Read this file first, then split the project into the correct docs and files.
 
