@@ -693,6 +693,7 @@ The entry point. The only file the agent is guaranteed to read at session start.
 - **Rule**: Never consolidate these files without explicit intent. Keep concerns isolated to prevent accidental regressions.
 
 ## AI Technical Governance (CRITICAL)
+- **Discussion Precedence (CRITICAL)**: **Strictly forbidden to create, modify, or delete any code/files until the plan is fully discussed and finalized with the user.**
 
 ## TDD Decision Rule
 - **Use TDD** for: logic, data processing, routing, rendering output, business rules.
