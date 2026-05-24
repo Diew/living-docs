@@ -21,7 +21,7 @@ This document defines the **Living Docs** system — a self-maintaining document
 
 ## Three Layers
 
-### 1. Entry point — `agent.md`
+### 1. Entry point — `AGENTS.md`
 
 One file at the project root. The agent reads this first in every session without being asked. It gives enough context to act without replacing the full docs.
 
@@ -39,7 +39,7 @@ One file at the project root. The agent reads this first in every session withou
 
 ## Documentation Priority
 - `docs/` is the source of truth for behavior, architecture, and implementation rules.
-- `agent.md` holds only: session-critical rules, quick-reference checklists, metadata.
+- `AGENTS.md` holds only: session-critical rules, quick-reference checklists, metadata.
 - Do not duplicate detailed explanations here — link to `docs/` instead.
 - **Scope unclear?** Open `docs/ARCH_documentation-governance.md` first.
 
@@ -54,7 +54,7 @@ One file at the project root. The agent reads this first in every session withou
 - [ ] v[x.y.z]: [Planned milestone]
 ```
 
-**Rule**: If a rule exists in `agent.md` AND in a `docs/` file, the `docs/` file is the source of truth. `agent.md` holds a high-level echo only — enough to trigger awareness, not enough to replace the full rule.
+**Rule**: If a rule exists in `AGENTS.md` AND in a `docs/` file, the `docs/` file is the source of truth. `AGENTS.md` holds a high-level echo only — enough to trigger awareness, not enough to replace the full rule.
 
 ---
 
@@ -73,7 +73,7 @@ A folder of markdown files. Each file owns exactly one concern. The agent reads 
 | `REF_` | Facts | Lookup tables, constants, hardware/API endpoints. |
 | `INCIDENT_` | History | Post-mortems and known regressions to prevent repeating. |
 
-**Fixed names (no prefix, must not rename):** `agent.md`
+**Fixed names (no prefix, must not rename):** `AGENTS.md`
 
 **Fallback rule**: If a file is not in the registry → read prefix → load only if task matches → flag to user that registry needs updating.
 
@@ -119,7 +119,7 @@ Use one file as the source of truth for each rule group. No rule should appear i
 
 | Area | Canonical file | Notes |
 |------|----------------|-------|
-| Session-critical rules | `agent.md` | Fast startup rules only |
+| Session-critical rules | `AGENTS.md` | Fast startup rules only |
 | Implementation standards | `GUIDE_developer.md` | TDD, refactor, naming, module structure |
 | Docs registry / load mapping | `ARCH_documentation-governance.md` | File ownership and doc routing |
 | Data / API / routing | `ARCH_technical-specs.md` | SSOT and data flow rules |
@@ -198,10 +198,10 @@ Three domain-agnostic patterns enforced across all projects via `GUIDE_` and `AR
 
 Protocols split across two files based on load frequency:
 
-- **`agent.md`** (session-critical, loaded every session): Pre-Commit Checklist, TDD Decision Rule, Goal-Driven Execution, When to Stop and Ask, Common Mistakes, Communication Style.
+- **`AGENTS.md`** (session-critical, loaded every session): Pre-Commit Checklist, TDD Decision Rule, Goal-Driven Execution, When to Stop and Ask, Common Mistakes, Communication Style.
 - **`docs/GUIDE_developer.md`** (loaded on-demand): Zero-Loss Refactor Protocol, When to Extract a Function, When to Split a File, Module Structure Rules, Naming Conventions.
 
-> Full rules → Copy-Pasteable `agent.md` Template and `GUIDE_developer.md` Template below.
+> Full rules → Copy-Pasteable `AGENTS.md` Template and `GUIDE_developer.md` Template below.
 
 ### Key behaviors (summary)
 
@@ -215,9 +215,9 @@ Protocols split across two files based on load frequency:
 
 ## Common Mistakes (Anti-Patterns)
 
-8 session-critical guardrails copied verbatim into `agent.md` during bootstrapping: no unsolicited refactor, no adding to old changelog entries, no rule duplication, no loading unneeded files, no manual version bumps, no assuming without confirming, no unrelated edits in one pass, no skipping the registry.
+8 session-critical guardrails copied verbatim into `AGENTS.md` during bootstrapping: no unsolicited refactor, no adding to old changelog entries, no rule duplication, no loading unneeded files, no manual version bumps, no assuming without confirming, no unrelated edits in one pass, no skipping the registry.
 
-> Full table → Copy-Pasteable `agent.md` Template below.
+> Full table → Copy-Pasteable `AGENTS.md` Template below.
 
 ---
 
@@ -225,7 +225,7 @@ Protocols split across two files based on load frequency:
 
 Answer only what is asked. No intro, recap, filler, or padding. Pattern: `[thing] [action] [reason]. [next step].` Drop articles, pleasantries, and hedging. Use fragments. Auto-Clarity Override: revert to full sentences for security warnings and irreversible actions.
 
-> Full rules and examples → Copy-Pasteable `agent.md` Template below.
+> Full rules and examples → Copy-Pasteable `AGENTS.md` Template below.
 
 ---
 
@@ -246,7 +246,7 @@ Answer only what is asked. No intro, recap, filler, or padding. Pattern: `[thing
 
 | File | Contains | Must NOT contain | Load when |
 |------|----------|-----------------|-----------|
-| `agent.md` | Session-critical rules, quick-reference, project metadata | Detailed implementation, full doc content | **Always** |
+| `AGENTS.md` | Session-critical rules, quick-reference, project metadata | Detailed implementation, full doc content | **Always** |
 | `GUIDE_developer.md` | Implementation standards, naming rules, patterns, versioning, pre-commit | Feature-specific logic, data structures | Technical work |
 | `ARCH_documentation-governance.md` | System's source of truth for doc management | Implementation content | Managing docs |
 | `ARCH_technical-specs.md` | Core architecture, data models, state flows, system boundaries | Formatting rules, UI tokens | Structural work |
@@ -259,8 +259,8 @@ Answer only what is asked. No intro, recap, filler, or padding. Pattern: `[thing
 
 | Task | Load |
 |------|------|
-| General development | `agent.md` |
-| Feature / Logic changes | `agent.md` + `GUIDE_developer.md` + relevant `LOGIC_*.md` |
+| General development | `AGENTS.md` |
+| Feature / Logic changes | `AGENTS.md` + `GUIDE_developer.md` + relevant `LOGIC_*.md` |
 | Implementation / Standards | + relevant `GUIDE_*.md` |
 | Architecture / Data changes | + relevant `ARCH_*.md` |
 | Interface / Output changes | + relevant `STANDARDS_*.md` |
@@ -277,7 +277,7 @@ Use one file as the source of truth for each rule group.
 
 | Area | Canonical file |
 |------|----------------|
-| Session-critical rules | `agent.md` |
+| Session-critical rules | `AGENTS.md` |
 | Implementation standards | `GUIDE_developer.md` |
 | Docs registry / load mapping | `ARCH_documentation-governance.md` |
 | Project-specific logic | `LOGIC_*.md` |
@@ -295,7 +295,7 @@ Use one file as the source of truth for each rule group.
 | `REF_` | Reference tables, constants, lookup data |
 | `INCIDENT_` | Incident post-mortems, regression logs |
 
-**Fixed names (no prefix, must not rename):** `agent.md`
+**Fixed names (no prefix, must not rename):** `AGENTS.md`
 
 **Fallback rule:** If a file is not in the registry → read prefix → load only if task matches → flag to user that registry needs updating.
 
@@ -314,7 +314,7 @@ Use one file as the source of truth for each rule group.
 1. Copy to destination → verify complete → delete from source → update any references.
 
 ### Editing existing files
-- `agent.md`: session-critical rules and metadata only.
+- `AGENTS.md`: session-critical rules and metadata only.
 - `GUIDE_*`: coding standards + basic UI. No deep visual rules.
 - `STANDARDS_*`: visual/interaction only. No coding standards.
 - Registry table: update immediately when any file is added, renamed, or removed.
@@ -657,12 +657,12 @@ For projects connecting to a shared Global LLM Wiki across multiple repos:
 
 - **Anchor path**: `../<global-llm-wiki>/index.md` (relative path from project root to the shared wiki repo).
 - Local docs override global standards when there is a conflict.
-- Document the anchor in `agent.md` under "Context Anchors".
+- Document the anchor in `AGENTS.md` under "Context Anchors".
 - The Global LLM Wiki provides institutional memory; local docs provide project specifics.
 
 ---
 
-## Copy-Pasteable `agent.md` Template
+## Copy-Pasteable `AGENTS.md` Template
 
 The entry point. The only file the agent is guaranteed to read at session start.
 
@@ -682,7 +682,7 @@ The entry point. The only file the agent is guaranteed to read at session start.
 
 ## Documentation Priority
 - `docs/` is the source of truth for behavior, architecture, and implementation rules.
-- `agent.md` holds only: session-critical rules, quick-reference checklists, metadata.
+- `AGENTS.md` holds only: session-critical rules, quick-reference checklists, metadata.
 - Do not duplicate detailed explanations here — link to `docs/` instead.
 - **Scope unclear?** Open `docs/ARCH_documentation-governance.md` first — task→load mapping is there.
 
@@ -783,7 +783,7 @@ Documentation drift is the enemy. To prevent it, the agent performs a **Doc Swee
 
 
 ### Path A: New Project (Greenfield)
-1. **Initialize `agent.md`**: Create this file at the project root using the **Copy-Pasteable `agent.md` Template** from this document. The template includes Communication Style, Common Mistakes, TDD rules, Pre-Commit Protocol, and Goal-Driven Execution — fill in project-specific values but do not omit any section.
+1. **Initialize `AGENTS.md`**: Create this file at the project root using the **Copy-Pasteable `AGENTS.md` Template** from this document. The template includes Communication Style, Common Mistakes, TDD rules, Pre-Commit Protocol, and Goal-Driven Execution — fill in project-specific values but do not omit any section.
 2. **Setup Folder**: Create `docs/` directory.
 3. **Create Registry**: Create `docs/ARCH_documentation-governance.md` using the **Copy-Pasteable Registry Template** from this document. You **MUST** copy the entire template verbatim — every table, section, and row.
 4. **Create Core Docs**: 
@@ -803,8 +803,8 @@ This path is **doc-only**. No code is written, moved, or modified at any point. 
 
 Before anything else, check what already exists:
 
-- **No `agent.md` or `docs/` found** → proceed to Step 1.
-- **`agent.md` or `docs/` found (partial or full)** → audit existing files first. Read every existing doc, note what each contains, flag conflicts or gaps. Do not overwrite anything yet. Use findings to inform Steps 1–2 below — merge with templates, do not replace.
+- **No `AGENTS.md` or `docs/` found** → proceed to Step 1.
+- **`AGENTS.md` or `docs/` found (partial or full)** → audit existing files first. Read every existing doc, note what each contains, flag conflicts or gaps. Do not overwrite anything yet. Use findings to inform Steps 1–2 below — merge with templates, do not replace.
 
 #### Step 1: Copy core templates (do this before auditing any code)
 
@@ -815,7 +815,7 @@ While context is fresh, copy all core templates verbatim from this document:
 - Create `docs/REF_template.md` using the **General Doc Template** from this document. This file is the reference template for all future doc creation — copy it verbatim.
 - Create `docs/STANDARDS_*.md` using the **Copy-Pasteable `STANDARDS_*.md` Template** for each visual/IO domain in the project.
 - Create `docs/ARCH_documentation-governance.md` using the **Copy-Pasteable Registry Template**. Copy the entire template verbatim — every table, section, and row.
-- Create `agent.md` using the **Copy-Pasteable `agent.md` Template**. Do not omit any section — fill in project-specific values in Steps 3–6 below.
+- Create `AGENTS.md` using the **Copy-Pasteable `AGENTS.md` Template**. Do not omit any section — fill in project-specific values in Steps 3–6 below.
 - Create `docs/REFACTOR_TODO.md` using the **Refactor Work Plan Template** from this document. Leave all sections empty — this file is required even if no debt is found yet.
 
 > If existing docs were found in Step 0: merge their content into the templates now. Existing rules take precedence over placeholder text. Do not discard institutional knowledge.
@@ -837,23 +837,23 @@ Repeat the following cycle for each unit until the entire codebase is covered:
 
 Once all modules are covered, fill in placeholders across all files created in Step 1:
 
-- `agent.md` — Project name, version, tech stack, commands, milestones. Task→load mapping must reflect all registered docs.
+- `AGENTS.md` — Project name, version, tech stack, commands, milestones. Task→load mapping must reflect all registered docs.
 - `docs/ARCH_documentation-governance.md` — Register all `LOGIC_*.md` and `ARCH_*.md` created in Step 2.
 - `docs/STANDARDS_*.md` — Replace placeholder tokens with actual values from the codebase.
 
 #### Step 4: Final checks
 
 - **Flag Debt**: Fill in `REFACTOR_TODO.md` (created in Step 1) with any patterns that violate established standards found during the audit.
-- **Lock State**: System is "Live" when all docs are registered, and `agent.md` task→load mapping is complete.
+- **Lock State**: System is "Live" when all docs are registered, and `AGENTS.md` task→load mapping is complete.
 
 **Completion checklist:**
-- [ ] `agent.md` exists and has no unfilled placeholders
+- [ ] `AGENTS.md` exists and has no unfilled placeholders
 - [ ] `docs/ARCH_documentation-governance.md` lists every doc in `docs/`
 - [ ] Every `LOGIC_*.md` and `ARCH_*.md` has no `[UNVERIFIED]` flags remaining
 - [ ] Task→load mapping covers all registered doc prefixes
 - [ ] `REFACTOR_TODO.md` created (even if empty)
 
-> **The system is live when the agent can start a fresh session, read only `agent.md`, and know exactly which files to load for any task — without asking.**
+> **The system is live when the agent can start a fresh session, read only `AGENTS.md`, and know exactly which files to load for any task — without asking.**
 
 ---
 
